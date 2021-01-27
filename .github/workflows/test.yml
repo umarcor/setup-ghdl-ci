@@ -8,6 +8,41 @@ on:
 
 jobs:
 
+  docker:
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        image:
+        - 'bullseye-llvm-9'
+        - 'buster-llvm-7'
+        - 'ubuntu20-llvm-10'
+        - 'ubuntu18-llvm-5.0'
+        - 'fedora33-llvm'
+        - 'fedora32-llvm'
+    runs-on: ubuntu-latest
+    container: 'ghdl/ghdl:${{ matrix.image }}'
+    name: '🛳️ ghdl/ghdl:${{ matrix.image }}'
+    steps:
+
+    - name: '🧰 Checkout'
+      uses: actions/checkout@v2
+
+    - name: '⚙️ Install dependencies'
+      if: "!contains(matrix.image, 'fedora')"
+      run: |
+        apt update -qq
+        apt install -y python3
+
+    - name: '⚙️ Install dependencies'
+      if: contains(matrix.image, 'fedora')
+      run: |
+        dnf update -y
+        dnf install -y python3
+
+    - name: Test Abort
+      run: ./test-abort/run.sh
+
 
   ubuntu:
     strategy:
